@@ -12,30 +12,36 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [14, 16, 18]
+
     steps:
-    # Step 1: Check out the code
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # Step 2: Set up Node.js environment
     - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '16'  # Specify your Node.js version
+        node-version: ${{ matrix.node-version }}
 
-    # Step 3: Install dependencies
+    - name: Cache Node.js modules
+      uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
     - name: Install dependencies
       run: npm install
 
-    # Step 4: Run tests
     - name: Run tests
       run: npm test
 
-    # Step 5: Build the application
     - name: Build the application
       run: npm run build
 
-    # Step 6: Deploy (Optional, can be customized to your deployment needs)
     - name: Deploy to production
       run: ./deploy.sh
       env:
